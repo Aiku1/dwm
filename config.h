@@ -1,4 +1,5 @@
 /* See LICENSE file for copyright and license details. */
+#include <X11/XF86keysym.h>
 
 /* appearance */
 static const unsigned int borderpx  = 1;        /* border pixel of windows */
@@ -45,7 +46,7 @@ static const Layout layouts[] = {
 };
 
 /* key definitions */
-#define MODKEY Mod1Mask
+#define MODKEY Mod4Mask
 #define TAGKEYS(KEY,TAG) \
 	{ MODKEY,                       KEY,      view,           {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask,           KEY,      toggleview,     {.ui = 1 << TAG} }, \
@@ -59,13 +60,23 @@ static const Layout layouts[] = {
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 //static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
 static const char *dmenucmd[] = { "rofi", "-show", "run", "-theme", "monokai", NULL};
-// static const char *termcmd[]  = { "st", NULL };
-static const char *termcmd[]  = { "urxvt", NULL };
+// static const char *unicode[] = { "/usr/local/bin/unipicker", "--copy-command", "xclip", "--command", "'",  "rofi", "-dmenu", "-theme", "monokai", "-sort", "-matching", "normal", "'", NULL};
+static const char *termcmd[]  = { "st", NULL };
+// static const char *termcmd[]  = { "urxvt", NULL };
+
+// audio manipulation
+static const char *upvol[] = { "amixer", "-D", "pulse" , "sset", "Master", "2%+", NULL };
+static const char *downvol[] = { "amixer", "-D", "pulse" , "sset", "Master", "2%-", NULL };
+static const char *mute[] = { "amixer", "-D", "pulse", "sset", "Master", "toggle", NULL };
 
 static Key keys[] = {
 	/* modifier                     key        function        argument */
+    { 0,              XF86XK_AudioRaiseVolume, spawn,          {.v = upvol } },
+    { 0,              XF86XK_AudioLowerVolume, spawn,          {.v = downvol } },
+    { 0,              XF86XK_AudioMute,        spawn,          {.v = mute } },
 	{ MODKEY,                       XK_d,      spawn,          {.v = dmenucmd } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
+	// { MODKEY|ShiftMask,             XK_k,      spawn,          {.v = unicode } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
 	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
