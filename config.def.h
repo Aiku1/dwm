@@ -60,30 +60,26 @@ static const Layout layouts[] = {
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 //static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
 static const char *dmenucmd[] = { "rofi", "-show", "run", "-theme", "monokai", NULL};
+// static const char *unicode[] = { "/usr/local/bin/unipicker", "--copy-command", "xclip", "--command", "'",  "rofi", "-dmenu", "-theme", "monokai", "-sort", "-matching", "normal", "'", NULL};
 static const char *termcmd[]  = { "st", NULL };
-static const char *lockcmd[]  = { "slock", NULL };
 // static const char *termcmd[]  = { "urxvt", NULL };
 
 // audio manipulation
-static const char *upvol[] =    { "amixer", "-D", "pulse", "sset", "Master", "2%+", NULL };
-static const char *downvol[] =  { "amixer", "-D", "pulse", "sset", "Master", "2%-", NULL };
-static const char *mute[] =     { "amixer", "-D", "pulse", "sset", "Master", "toggle", NULL };
-
-// brightness manipulation
-static const char *upbrightness[] =     { "xbacklight", "+10%", "-time 0", NULL };
-static const char *downbrightness[] =   { "xbacklight", "-10%", "-time 0", NULL };
+static const char *upvol[] = { "amixer", "-D", "pulse" , "sset", "Master", "2%+", NULL };
+static const char *downvol[] = { "amixer", "-D", "pulse" , "sset", "Master", "2%-", NULL };
+static const char *mute[] = { "amixer", "-D", "pulse", "sset", "Master", "toggle", NULL };
 
 static Key keys[] = {
 	/* modifier                     key        function        argument */
-    { 0,                            XF86XK_AudioRaiseVolume,   spawn,  {.v = upvol } },
-    { 0,                            XF86XK_AudioLowerVolume,   spawn,  {.v = downvol } },
-    { 0,                            XF86XK_AudioMute,          spawn,  {.v = mute } },
-	{ 0,                            XF86XK_MonBrightnessUp,    spawn,  {.v = upbrightness } },
-	{ 0,                            XF86XK_MonBrightnessDown,  spawn,  {.v = downbrightness } },
+    { 0,              XF86XK_AudioRaiseVolume, spawn,          {.v = upvol } },
+    { 0,              XF86XK_AudioLowerVolume, spawn,          {.v = downvol } },
+    { 0,              XF86XK_AudioMute,        spawn,          {.v = mute } },
 	{ MODKEY,                       XK_d,      spawn,          {.v = dmenucmd } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
+    //{ ShiftMask,	  		        XK_Print,  spawn,	   SHCMD("sleep 1s;scrot --select ~/Screenshots/%Y-%m-%d-%H:%M:%S.jpg -e 'xclip -selection c -t image/png < %f'") },
+    //{ ShiftMask,	  		        XK_Print,  spawn,	   SHCMD("sleep 1s;scrot --select ~/Screenshots/%Y-%m-%d-%H:%M:%S.jpg") },
+	// { MODKEY|ShiftMask,             XK_k,      spawn,          {.v = unicode } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
-    { MODKEY,                       XK_F3,     spawn,          {.v = lockcmd} },
 	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
 	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
@@ -92,13 +88,13 @@ static Key keys[] = {
 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
 	{ MODKEY,                       XK_Return, zoom,           {0} },
 	{ MODKEY,                       XK_Tab,    view,           {0} },
-	{ MODKEY,                       XK_q,      killclient,     {0} },
+	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
 	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
 	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[1]} },
 	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[2]} },
 	{ MODKEY,                       XK_space,  setlayout,      {0} },
 	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
-	//{ MODKEY,                       XK_0,      view,           {.ui = ~0 } },
+	{ MODKEY,                       XK_0,      view,           {.ui = ~0 } },
 	{ MODKEY|ShiftMask,             XK_0,      tag,            {.ui = ~0 } },
 	{ MODKEY,                       XK_comma,  focusmon,       {.i = -1 } },
 	{ MODKEY,                       XK_period, focusmon,       {.i = +1 } },
@@ -113,7 +109,7 @@ static Key keys[] = {
 	TAGKEYS(                        XK_7,                      6)
 	TAGKEYS(                        XK_8,                      7)
 	TAGKEYS(                        XK_9,                      8)
-	{ MODKEY|ShiftMask,             XK_F12,      quit,         {0} },
+	{ MODKEY|ShiftMask,             XK_q,      quit,           {0} },
 };
 
 /* button definitions */
