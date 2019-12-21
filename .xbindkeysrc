@@ -72,15 +72,15 @@
     XF86MonBrightnessDown
 
 # Play/Pause
-"dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause; ~/.config/dwm_status.sh"
+"cmus-remote -u; dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause; ~/.config/dwm_status.sh"
     XF86AudioPlay
 
 # Next
-"dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Next; ~/.config/dwm_status.sh"
+"cmus-remote -n; dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Next; ~/.config/dwm_status.sh"
     XF86AudioNext
 
 # Previous
-"dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Previous; ~/.config/dwm_status.sh"
+"cmus-remote r; dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Previous; ~/.config/dwm_status.sh"
     XF86AudioPrev
 
 # Volume up
@@ -108,7 +108,7 @@
     Mod4 + d
 
 # screenshot
-"notify-send "Screenshot!"; "scrot -s -e 'mv $f ~/tmp &&  xclip -selection clipboard -t image/png -i ~/tmp/$n'""
+#"notify-send "Screenshot!"; "scrot -s -e 'mv $f ~/tmp &&  xclip -selection clipboard -t image/png -i ~/tmp/$n'""
     Mod4 + z
 
 #unicode
