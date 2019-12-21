@@ -58,32 +58,11 @@ static const Layout layouts[] = {
 
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
-//static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
 static const char *dmenucmd[] = { "rofi", "-show", "run", "-theme", "monokai", NULL};
-static const char *termcmd[]  = { "st", NULL };
-static const char *lockcmd[]  = { "slock", NULL };
-// static const char *termcmd[]  = { "urxvt", NULL };
-
-// audio manipulation
-static const char *upvol[] =    { "amixer", "-D", "pulse", "sset", "Master", "2%+", NULL };
-static const char *downvol[] =  { "amixer", "-D", "pulse", "sset", "Master", "2%-", NULL };
-static const char *mute[] =     { "amixer", "-D", "pulse", "sset", "Master", "toggle", NULL };
-
-// brightness manipulation
-static const char *upbrightness[] =     { "xbacklight", "+10%", "-time 0", NULL };
-static const char *downbrightness[] =   { "xbacklight", "-10%", "-time 0", NULL };
 
 static Key keys[] = {
 	/* modifier                     key        function        argument */
-    { 0,                            XF86XK_AudioRaiseVolume,   spawn,  {.v = upvol } },
-    { 0,                            XF86XK_AudioLowerVolume,   spawn,  {.v = downvol } },
-    { 0,                            XF86XK_AudioMute,          spawn,  {.v = mute } },
-	{ 0,                            XF86XK_MonBrightnessUp,    spawn,  {.v = upbrightness } },
-	{ 0,                            XF86XK_MonBrightnessDown,  spawn,  {.v = downbrightness } },
-	{ MODKEY,                       XK_d,      spawn,          {.v = dmenucmd } },
-	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
-    { MODKEY,                       XK_F3,     spawn,          {.v = lockcmd} },
 	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
 	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
@@ -123,7 +102,6 @@ static Button buttons[] = {
 	{ ClkLtSymbol,          0,              Button1,        setlayout,      {0} },
 	{ ClkLtSymbol,          0,              Button3,        setlayout,      {.v = &layouts[2]} },
 	{ ClkWinTitle,          0,              Button2,        zoom,           {0} },
-	{ ClkStatusText,        0,              Button2,        spawn,          {.v = termcmd } },
 	{ ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },
 	{ ClkClientWin,         MODKEY,         Button2,        togglefloating, {0} },
 	{ ClkClientWin,         MODKEY,         Button3,        resizemouse,    {0} },
