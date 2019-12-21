@@ -37,20 +37,33 @@ old_received_bytes=$received_bytes
 old_transmitted_bytes=$transmitted_bytes
 old_time=$now
 
+print_spotify() {
+	#song="$(dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:org.mpris.MediaPlayer2.Player string:Metadata 2> /dev/null | sed -n '/title/{n;p}' | cut -d '"' -f 2)"
+	#artist="$(dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:org.mpris.MediaPlayer2.Player string:Metadata 2> /dev/null | sed -n '/artist/,$p' | tail -n+3 | head -1 | cut -d '"' -f 2)"
+
+	#if [ -z "$artist" ] || [ -z "$song" ]
+	#then
+	#	false
+	#else
+	#	echo -e "${artist} - ${song} |"
+	#fi
+	echo -e "$(python ~/.config/python_spotify.py)"
+}
+
 print_volume() {
     volume="$(amixer -D pulse sget Master | grep "Right:" | awk -F'[][]' '{ print $2 }')"
-    #if (( "volume" == 0 )); then
-    #        emoji="🔇"
-    #    elif (( "volume" >= 1 && "volume" <= 33 )); then
-    #        emoji="🔈"
-    #    elif (( "volume" >= 33 && "volume" <=66 )); then
-    #    emoji="🔉"
-    #    else
-    #        emoji="🔊"
-    #    fi
+    if (( "${volume::-1}" == 0 )); then
+	emoji="🔇"
+    elif (( "${volume::-1}" >=  1 && "${volume::-1}" <= 33 )); then
+        emoji="🔈"
+    elif (( "${volume::-1}" >= 33 && "${volume::-1}" <= 66 )); then
+	emoji="🔉"
+    else
+	emoji="🔊"
+   fi
 
-    #echo -e "${emoji} ${volume}"
-    echo -e "${volume}"
+    echo -e "${emoji} ${volume}"
+    #echo -e "${volume}"
 }
 
 print_wifi() {
@@ -96,8 +109,9 @@ print_bat(){
 }
 
 print_date(){
-	#date "+%a %m-%d %T%:::z"
-    date +"%A %d %B %Y, %H:%M"
+    #date "+%a %m-%d %T%:::z"
+    #date +"%a %d %b %Y, %H:%M"
+    date +"%a %Y/%m/%d, %H:%M"
 }
 
 print_brightness(){
@@ -112,25 +126,26 @@ print_brightness(){
 #	echo " $size $(basename $rp)"
 #}
 
-while true
-do
-
-	# Get new transmitted, received byte number values and current time
+#while true
+#do
 	get_bytes
-
-	# Calculates speeds
 	vel_recv=$(get_velocity $received_bytes $old_received_bytes $now)
 	vel_trans=$(get_velocity $transmitted_bytes $old_transmitted_bytes $now)
 
-    xsetroot -name "RAM: $(print_mem) | d:$vel_recv u:$vel_trans | $(print_temp) | ☀️ $(print_brightness) | 🔋 $(print_bat)% | VOL:$(print_volume) | $(print_date)"
+	wget -q --spider http://google.com
+	if [ $? -eq 0 ]; then
+		xsetroot -name "$(print_spotify) RAM: $(print_mem) | ↓$vel_recv ↑$vel_trans | $(print_temp) | $(print_bat)% | $(print_volume) | $(print_date)"
+	else
+		xsetroot -name "$(print_spotify) RAM: $(print_mem) | $(print_temp) | $(print_bat)% | $(print_volume) | $(print_date)"
+	fi
 
+	#xsetroot -name "$(print_spotify) RAM: $(print_mem) | d:$vel_recv u:$vel_trans | $(print_temp) | ☀️ $(print_brightness) | 🔋 $(print_bat)% | VOL:$(print_volume) | $(print_date)"
+	#xsetroot -name "$(print_spotify) RAM: $(print_mem) | d:$vel_recv u:$vel_trans | $(print_temp) | 🔋 $(print_bat)% | VOL:$(print_volume) | $(print_date)"
 
-	# Update old values to perform new calculations
 	old_received_bytes=$received_bytes
 	old_transmitted_bytes=$transmitted_bytes
 	old_time=$now
 
 	sleep 1
-
-done
+#done
 
