@@ -30,8 +30,21 @@ except:
     try:
         strartist = os.popen("cmus-remote -Q | grep --text '^tag artist' | sed '/^tag artistsort/d' | awk '{gsub(\"tag artist \", \"\");print}'").read()[0:-1]
         strtitle = os.popen("cmus-remote -Q | grep --text '^tag title' | sed -e 's/tag title //' | awk '{gsub(\"tag title \", \"\");print}'").read()[0:-1]
+        sep = " - "
+        if (strartist is None or strtitle is None):
+           path = os.popen("cmus-remote -Q 2> /dev/null").read().split('\n')[1]
+           length = len(path)
+           last_slash = path.rindex("/", 0, length)
+           last_dot = path.rindex(".", last_slash, length)
+           strtitle = path[last_slash + 1 : last_dot]
+           if (re.search("^\d+", strtitle) is not None):
+              sep = " -"
+           strtitle = re.sub(r"^\d+", "", strtitle)
+           strtitle = path.split("/")[6].split(" ")
+           strtitle = " ".join((s for s in strtitle if (not s[0].isdigit())))[:-4]
+           strartist = path.split("/")[4]
 
-        printsong(strartist, " - ", strtitle)
+        printsong(strartist, sep, strtitle)
 
     except:
         print ""
