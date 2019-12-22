@@ -6,13 +6,13 @@ import re
 import os
 session_bus = dbus.SessionBus()
 
-def printsong(strartist, strtitle):
-    strtitle = (strtitle[:25] + "...") if len(strtitle) > 25 else strtitle
-    strartist = (strartist[:15] + "...") if len(strartist) > 15 else strartist
+def printsong(strartist, strsep, strtitle):
+    strtitle = (strtitle[:25] + "..") if len(strtitle) > 25 else strtitle
+    #strartist = (strartist[:20] + "...") if len(strartist) > 20 else strartist
     if (re.search("\([^()]*\)", strtitle) is not None):
-       print (strartist + " - " + re.sub("\([^()]*\)", "", strtitle) + "|" )
+       print (strartist + strsep + re.sub("\([^()]*\)", "", strtitle) + "|" )
     else:
-       print (strartist + " - " + re.sub("\([^()]*\)", "", strtitle) + " |" )
+       print (strartist + strsep + re.sub("\([^()]*\)", "", strtitle) + " |" )
        quit()
 
 try:
@@ -22,16 +22,27 @@ try:
     strtitle  = ''.join([str(e.encode('utf-8')) for e in metadata['xesam:title']])
     strartist = ''.join([str(e.encode('utf-8')) for e in metadata['xesam:artist']])
 
-    printsong(strartist, strtitle)
+    printsong(strartist, " -" , strtitle)
 
 except:
     try:
-        path = os.popen("cmus-remote -Q 2> /dev/null").read().split('\n')[1]
-        strtitle = path.split("/")[6].split(" ")
-        strtitle = " ".join((s for s in strtitle if (not s[0].isdigit())))[:-4]
-        strartist = path.split("/")[4]
+        #sep = " - "
+        #path = os.popen("cmus-remote -Q 2> /dev/null").read().split('\n')[1]
+        #length = len(path)
+        #last_slash = path.rindex("/", 0, length)
+        #last_point = path.rindex(".", last_slash, length)
+        #strtitle = path[last_slash+1:last_point]
+        #if (re.search("^\d+", strtitle) is not None):
+        #    sep = " -"
+        #strtitle = re.sub(r"^\d+", "", strtitle)
+        #strtitle = path.split("/")[6].split(" ")
+        #strtitle = " ".join((s for s in strtitle if (not s[0].isdigit())))[:-4]
+        #strartist = path.split("/")[4]
 
-        printsong(strartist, strtitle)
+        strartist = os.popen("cmus-remote -Q | grep --text '^tag artist' | sed '/^tag artistsort/d' | awk '{gsub(\"tag artist \", \"\");print}'").read()[0:-1]
+        strtitle = os.popen("cmus-remote -Q | grep --text '^tag title' | sed -e 's/tag title //' | awk '{gsub(\"tag title \", \"\");print}'").read()[0:-1]
+
+        printsong(strartist, " - ", strtitle)
 
     except:
         print ""
