@@ -56,9 +56,13 @@ super + z
     t=$(date +%s); maim -s ~/tmp/$t.png 2> /dev/null; xclip -sel clip -t image/png -i ~/tmp/$t.png
 
 # unicode
-super + shift + i
-    /usr/local/bin/unipicker --copy-command 'xclip -sel clip' --command 'rofi -dmenu -theme monokai -matching normal'
+super + shift + k
+    /usr/local/bin/unipicker --copy-command 'xclip -selection clip' --command 'rofi -dmenu -theme monokai -matching normal'
 
 # shutdown
 super + shift + BackSpace
     .local/bin/prompt "Shutdown computer?" "sudo -A shutdown -h now"
+
+# display mode picker
+super + shift + m
+   ~/.config/screenmode.sh
