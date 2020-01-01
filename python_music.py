@@ -7,14 +7,14 @@ import os
 session_bus = dbus.SessionBus()
 
 def printsong(strartist, strsep, strtitle):
+    if (re.search("\([^()]*\)", strtitle) is not None):
+        strend = "|"
+    else:
+        strend = " |"
     strtitle = re.sub("\([^()]*\)", "", strtitle)
-    strtitle = (strtitle[:25] + "..") if len(strtitle) > 25 else strtitle
+    strtitle = (strtitle[:20] + "..") if len(strtitle) > 20 else strtitle
     #strartist = (strartist[:20] + "...") if len(strartist) > 20 else strartist
-    #if (re.search("\([^()]*\)", strtitle) is not None):
-    #    strend = " |"
-    #else:
-    #    strend = " |"
-    print (strartist + strsep + strtitle + " |")
+    print (strartist + strsep + strtitle + strend)
     quit()
 
 try:
@@ -24,7 +24,7 @@ try:
     strtitle  = ''.join([str(e.encode('utf-8')) for e in metadata['xesam:title']])
     strartist = ''.join([str(e.encode('utf-8')) for e in metadata['xesam:artist']])
 
-    printsong(strartist, " -" , strtitle)
+    printsong(strartist, " - " , strtitle)
 
 except:
     try:
