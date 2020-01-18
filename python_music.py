@@ -18,13 +18,17 @@ def printsong(strartist, strsep, strtitle):
     quit()
 
 try:
-    spotify_bus = session_bus.get_object("org.mpris.MediaPlayer2.spotify","/org/mpris/MediaPlayer2")
-    spotify_properties = dbus.Interface(spotify_bus,"org.freedesktop.DBus.Properties")
-    metadata = spotify_properties.Get("org.mpris.MediaPlayer2.Player", "Metadata")
-    strtitle  = ''.join([str(e.encode('utf-8')) for e in metadata['xesam:title']])
-    strartist = ''.join([str(e.encode('utf-8')) for e in metadata['xesam:artist']])
+    #spotify_bus = session_bus.get_object("org.mpris.MediaPlayer2.spotify","/org/mpris/MediaPlayer2")
+    #spotify_properties = dbus.Interface(spotify_bus,"org.freedesktop.DBus.Properties")
+    #metadata = spotify_properties.Get("org.mpris.MediaPlayer2.Player", "Metadata")
+    #strtitle  = ''.join([str(e.encode('utf-8')) for e in metadata['xesam:title']])
+    #strartist = ''.join([str(e.encode('utf-8')) for e in metadata['xesam:artist']])
 
-    printsong(strartist, " - " , strtitle)
+    spotifyid=os.popen("ps -ef | grep '[/]usr/share/spotify' | awk '{print $2}' | head -1").read()[:-1]
+    if spotifyid:
+	currentsong=os.popen("wmctrl -l -p | grep '" + spotifyid + "' | sed -n 's/.*'x230'//p'").read()[:-1]
+	if currentsong != " Spotify" and currentsong != " Spotify Premium":
+	    print (currentsong + " |")
 
 except:
     try:
@@ -47,5 +51,4 @@ except:
         printsong(strartist, sep, strtitle)
 
     except:
-        print ""
-
+        print ("")
