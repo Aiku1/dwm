@@ -1,20 +1,23 @@
 super + shift + q
-	kill -9 `xdotool getwindowfocus getwindowpid`
+    kill -9 `xdotool getwindowfocus getwindowpid`
 
 super + w
     st -e sudo nmtui
 
-super + shift + w
-    firefox
+super + shift + w; {b, f, c}
+    {brave-browser, firefox, chromium}
 
 super + shift + Home
-	killall screenkey || screenkey --scr 1
+    killall screenkey || (screenkey --scr 1; screenkey --scr 0)
+
+super + b
+    feh --bg-fill ~/Pictures/Wallpapers/wall.png
 
 XF86MonBrightnessUp
     xbacklight -inc 10; ~/.config/dwm_status.sh
 
 XF86MonBrightnessDown
-    xbacklight .config/dwm_status.sh
+    xbacklight -dec 10; ~/.config/dwm_status.sh
 
 # Play/Pause
 XF86AudioPlay
@@ -35,34 +38,66 @@ XF86AudioRaiseVolume
 XF86AudioLowerVolume
     amixer -D pulse sset Master 2%-; ~/.config/dwm_status.sh
 
+# Volume up 10
+alt + XF86AudioRaiseVolume
+    amixer -D pulse sset Master 10%+; ~/.config/dwm_status.sh
+# Volume down 10
+alt + XF86AudioLowerVolume
+    amixer -D pulse sset Master 10%-; ~/.config/dwm_status.sh
+
 # Volume mute
 XF86AudioMute
     amixer -D pulse sset Master toggle; ~/.config/dwm_status.sh
+
+alt + p; p
+    pavucontrol
 
 # Terminal
 super + shift + Return
     st
 
 # Lock
-super + F3
-    slock
+XF86{ScreenSaver,Sleep}
+    slock &; systemctl suspend
 
 # Rofi
 super + d
     rofi -show run -theme monokai
 
+#mount/umount
+super + m; {m, u}
+    st -e {dmenu_mount, dmenu_umount}
+
 # screenshot
-super + z
+super + a
     t=$(date +%s); maim -s ~/tmp/$t.png 2> /dev/null; xclip -sel clip -t image/png -i ~/tmp/$t.png
+
+super + shift + a
+    t=$(date +%s); maim ~/tmp/$t.png 2> /dev/null; xclip -sel clip -t image/png -i ~/tmp/$t.png
 
 # unicode
 super + shift + k
-    /usr/local/bin/unipicker --copy-command 'xclip -selection clip' --command 'rofi -dmenu -theme monokai -matching normal'
-
-# shutdown
-super + shift + BackSpace
-    .local/bin/prompt "Shutdown computer?" "sudo -A shutdown -h now"
+    /home/usr/.config/unicode.sh
 
 # display mode picker
 super + shift + m
    ~/.config/screenmode.sh
+
+super + r
+    st -e ranger
+
+super + shift + r
+    st -e ranger ~/uni/Appunti/Anno\ I
+
+super + v; {v, e, c}
+    {st -e nvim, emacs, code}
+
+shift + XF86AudioPlay
+    spotify
+
+# make sxhkd reload its configuration files:
+super + Escape
+	pkill -USR1 -x sxhkd
+
+super + F11
+    [ $(printf "No\nYes" | rofi -dmenu -i -nb darkred -sb red -sf  white -nf gray -p "Shutdown computer?") = Yes ] && sudo -A shutdown -h now

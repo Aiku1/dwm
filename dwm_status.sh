@@ -1,80 +1,56 @@
-#!/bin/bash
-# Screenshot: http://s.natalian.org/2013-08-17/dwm_status.png
-# Network speed stuff stolen from http://linuxclues.blogspot.sg/2009/11/shell-script-show-network-speed.html
+print_music() {
+    #echo -e "$(python ~/.config/python_music.py)"
+    #get cmus data
+    if [ $(pgrep -x cmus$) ]; then
+        cmusartist="$(cmus-remote -Q 2> /dev/null | grep --text '^tag artist' | sed -e 's/tag artist //')"
+        cmustitle="$(cmus-remote -Q 2> /dev/null | grep --text '^tag title' | sed -e 's/tag title //')"
+        cmustimeTot="$(cmus-remote -Q 2> /dev/null | grep --text '^duration' | sed -e 's/duration //')"
+        cmustime="$(cmus-remote -Q 2> /dev/null | grep --text '^position' | sed -e 's/position //')"
+        cmustimeTot="$(date -d @$((cmustimeTot)) +%M:%S)"
+        cmustime="$(date -d @$((cmustime)) +%M:%S)"
 
-# This function parses /proc/net/dev file searching for a line containing $interface data.
-# Within that line, the first and ninth numbers after ':' are respectively the received and transmited bytes.
-get_bytes () {
-    # Find active network interface
-    interface=$(ip route get 8.8.8.8 2>/dev/null| awk '{print $5}')
-    line=$(grep $interface /proc/net/dev | cut -d ':' -f 2 | awk '{print "received_bytes="$1, "transmitted_bytes="$9}')
-    eval $line
-    now=$(date +%s%N)
-}
+        case $(cmus-remote -Q 2> /dev/null | grep --text "^status" | sed -e 's/status //') in
+            playing)
+                emoji="▶️" ;;
+            paused)
+                emoji="⏸️" ;;
+        esac
 
-# Function which calculates the speed using actual and old byte number.
-# Speed is shown in KByte per second when greater or equal than 1 KByte per second.
-# This function should be called each second.
+        cmustitle=$(echo $cmustitle | sed "s/ ([^)]*)//g")
+        [ ${#cmustitle} -gt 20 ] && cmustitle="$(echo $cmustitle | cut -b 1-20)…"
 
-get_velocity() {
-    value=$1
-    old_value=$2
-    now=$3
+        [ "$cmustimeTot" != "00:00" ] && printf " (%s %s/%s) %s - %s |\0" "$emoji" "$cmustime" "$cmustimeTot" "$cmusartist" "$cmustitle"
+    fi
 
-    timediff=$(($now - $old_time))
-    velKB=$(echo "1000000000*($value-$old_value)/1024/$timediff" | bc)
-    if test "$velKB" -gt 1024
-    then
-        echo $(echo "scale=2; $velKB/1024" | bc)MB/s
-    else
-        echo ${velKB}KB/s
+    # get mpd data
+    if [ $(pgrep -x mpd) ]; then
+        mpdsong="$(mpc status 2> /dev/null | head -1 | sed "s/([^)]*)//g")"
+        mpdtime="$(mpc status 2> /dev/null | tr '\n' ';' | awk '{ split($0,a,";"); split(a[2], b," "); print b[3] }')"
+        [ "$mpdtime" ] && echo " ($mpdtime) $mpdsong |"
+    fi
+
+    #get spotify data
+    if [ $(pgrep -x spotify | head -1) ]; then
+        spotifypid=$(pgrep -x spotify | head -1)
+        spotifytitle="$(eval "wmctrl -l -p | awk '/$spotifypid/' | sed -n 's/.*x230 //p'")"
+        spotifytitle=$(echo $spotifytitle | sed "s/([^)]*)//g")
+        [ "$spotifytitle" != "Spotify Premium" ] && [ "$spotifytitle" != "Spotify" ] && echo " $spotifytitle |"
     fi
 }
 
-# Get initial values
-get_bytes
-old_received_bytes=$received_bytes
-old_transmitted_bytes=$transmitted_bytes
-old_time=$now
-
-print_music() {
-    echo -e "$(python ~/.config/python_music.py)"
-}
-
 print_volume() {
-    volume="$(amixer -D pulse sget Master | grep "Right:" | awk -F'[][]' '{ print $2 }')"
-    if (( "${volume::-1}" == 0 )); then
-        emoji="🔇"
-    elif (( "${volume::-1}" >=  1 && "${volume::-1}" < 33 )); then
-        emoji="🔈"
-    elif (( "${volume::-1}" >= 33 && "${volume::-1}" < 66 )); then
-        emoji="🔉"
-    else
-        emoji="🔊"
-   fi
+    volume="$(amixer -D pulse sget Master | grep "Right:" | awk -F'[][]' '{ print $2 }' | sed 's/\%//')"
 
-   echo -e "${emoji} ${volume}"
-}
+    [ "$volume" -eq  "0" ] && emoji="🔇"
+    [ "$volume" -ge  "1" ] && [ "$volume" -lt "33" ] && emoji="🔈"
+    [ "$volume" -ge "33" ] && [ "$volume" -lt "66" ] && emoji="🔉"
+    [ "$volume" -ge "66" ] && emoji="🔊"
 
-print_wifi() {
-    ip=$(ip route get 8.8.8.8 2>/dev/null|grep -Eo 'src [0-9.]+'|grep -Eo '[0-9.]+')
-
-    if=wlan0
-        while IFS=$': \t' read -r label value
-        do
-            case $label in SSID) SSID=$value
-                ;;
-            signal) SIGNAL=$value
-                ;;
-        esac
-    done < <(iw "$if" link)
-
-    echo -e "$SSID $SIGNAL $ip"
+   echo "${emoji} ${volume}%"
 }
 
 print_mem(){
-    memfree=$(($(grep -m1 'MemAvailable:' /proc/meminfo | awk '{print $2}') / 1024))
-    echo -e "$memfree MB"
+    echo $(($(awk '/MemAvailable/ {print $2}' /proc/meminfo) / 1024)) MB
 }
 
 print_temp(){
@@ -84,9 +60,9 @@ print_temp(){
 
 print_bat(){
     hash acpi || return 0
-    onl="$(grep "on-line" <(acpi -V))"
+    onl="$( acpi -V | grep "on-line" )"
     charging="$(upower -i /org/freedesktop/UPower/devices/battery_BAT0 | grep -E "state" | awk '{$1= ""; print $0}' - )"
-    # echo $charging
+
     case $charging in
         " fully-charged")
             emoji="🗲"
@@ -100,7 +76,7 @@ print_bat(){
     esac
 
     charge="$(awk '{ sum += $1 } END { print sum }' /sys/class/power_supply/BAT*/capacity)"
-    echo -e "${emoji} ${charge}"
+    echo "${emoji} ${charge}"
 }
 
 print_date(){
@@ -112,17 +88,9 @@ print_brightness(){
     echo ${p%%.*}
 }
 
-get_bytes
-vel_recv=$(get_velocity $received_bytes $old_received_bytes $now)
-vel_trans=$(get_velocity $transmitted_bytes $old_transmitted_bytes $now)
-
-ping -q -w1 -c1 google.com &>/dev/null
+ping -q -w1 -c1 1.1.1.1 >/dev/null
 if [ $? -eq 0 ]; then
-    xsetroot -name "$(print_music) RAM: $(print_mem) | ↓$vel_recv ↑$vel_trans | $(print_temp) | $(print_bat)% | $(print_volume) | $(print_date)"
+    xsetroot -name "$(print_music) $(print_mem) | $(print_temp) | $(print_bat)% | $(print_volume) | $(print_date) "
 else
-    xsetroot -name "$(print_music) RAM: $(print_mem) | $(print_temp) | $(print_bat)% | $(print_volume) | $(print_date)"
+    xsetroot -name " NO CONNECTION | $(print_music) $(print_mem) | $(print_temp) | $(print_bat)% | $(print_volume) | $(print_date) "
 fi
-
-old_received_bytes=$received_bytes
-old_transmitted_bytes=$transmitted_bytes
-old_time=$now
