@@ -1,0 +1,11 @@
+#!/bin/sh
+
+case $BLOCK_BUTTON in
+	1) notify-send "🖥 CPU hogs" "$(ps axch -o cmd:15,%cpu --sort=-%cpu | head)" ;;
+	3) notify-send "🖥 CPU module " "\- Shows CPU temperature.
+- Click to show intensive processes.
+- % is of single core." ;;
+esac
+
+test -f /sys/class/thermal/thermal_zone0/temp || return 0
+echo " $(head -c 2 /sys/class/thermal/thermal_zone0/temp)°C "

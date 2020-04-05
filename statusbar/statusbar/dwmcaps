@@ -1,0 +1,4 @@
+#!/bin/sh 
+get_caps
+[ "$?" = "0" ] && printf " 🔴 \0" && pkill -RTMIN+1 dwmblocks
+
