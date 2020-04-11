@@ -1,0 +1,7 @@
+#!/bin/sh
+
+pic=$(find ~/Pictures -type f | rofi -dmenu -theme monokai -i -p "Which picture?")
+
+[ -z $pic ] && exit
+
+feh --bg-fill $pic

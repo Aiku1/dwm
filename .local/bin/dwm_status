@@ -1,0 +1,109 @@
+#!/bin/sh
+
+print_music() {
+    #echo -e "$(python ~/.config/python_music.py)"
+
+    #get cmus data
+    if [ ! -z "$(pgrep -x cmus$)" ]; then
+        cmusartist="$(cmus-remote -Q 2> /dev/null | grep --text '^tag artist' | sed -e 's/tag artist //')"
+        cmustitle="$(cmus-remote -Q 2> /dev/null | grep --text '^tag title' | sed -e 's/tag title //')"
+        cmustimeTot="$(cmus-remote -Q 2> /dev/null | grep --text '^duration' | sed -e 's/duration //')"
+        cmustime="$(cmus-remote -Q 2> /dev/null | grep --text '^position' | sed -e 's/position //')"
+        cmustimeTot="$(date -d @$((cmustimeTot)) +%M:%S)"
+        cmustime="$(date -d @$((cmustime)) +%M:%S)"
+
+        case $(cmus-remote -Q 2> /dev/null | grep --text "^status" | sed -e 's/status //') in
+            playing)
+                emoji="▶️" ;;
+            paused)
+                emoji="⏸️" ;;
+        esac
+
+        cmustitle=$(echo $cmustitle | sed "s/ ([^)]*)//g")
+        [ ${#cmustitle} -gt 20 ] && cmustitle="$(echo $cmustitle | cut -b 1-20)…"
+
+        [ "$cmustimeTot" != "00:00" ] && printf " (%s %s/%s) %s - %s |\0" "$emoji" "$cmustime" "$cmustimeTot" "$cmusartist" "$cmustitle"
+    fi
+
+    # get mpd data
+    if [ ! -z "$(pgrep -x mpd)" ]; then
+        mpdsong="$(mpc status 2> /dev/null | head -1 | sed "s/([^)]*)//g")"
+        mpdtime="$(mpc status 2> /dev/null | tr '\n' ';' | awk '{ split($0,a,";"); split(a[2], b," "); print b[3] }')"
+        [ "$mpdtime" ] && echo " ($mpdtime) $mpdsong |"
+    fi
+
+    #get spotify data
+    if [ ! -z "$(pgrep -x spotify | head -1)" ]; then
+        spotifypid=$(pgrep -x spotify | head -1)
+        spotifytitle="$(eval "wmctrl -l -p | awk '/$spotifypid/' | sed -n 's/.*x230 //p'")"
+        spotifytitle=$(echo $spotifytitle | sed "s/([^)]*)//g")
+        [ "$spotifytitle" != "Spotify Premium" ] && [ "$spotifytitle" != "Spotify" ] && echo " $spotifytitle |"
+    fi
+}
+
+print_volume() {
+    volume="$(amixer -D pulse sget Master | grep "Right:" | awk -F'[][]' '{ print $2 }' | sed 's/\%//')"
+
+    [ "$volume" -eq  "0" ] && emoji="🔇"
+    [ "$volume" -ge  "1" ] && [ "$volume" -lt "33" ] && emoji="🔈"
+    [ "$volume" -ge "33" ] && [ "$volume" -lt "66" ] && emoji="🔉"
+    [ "$volume" -ge "66" ] && emoji="🔊"
+
+   echo "${emoji} ${volume}%"
+}
+
+print_mem(){
+    echo $(($(awk '/MemAvailable/ {print $2}' /proc/meminfo) / 1024)) MB
+}
+
+print_temp(){
+    test -f /sys/class/thermal/thermal_zone0/temp || return 0
+    echo $(head -c 2 /sys/class/thermal/thermal_zone0/temp)°C
+}
+
+print_bat(){
+    hash acpi || return 0
+    #minutes
+    batcheck=5
+    #onl="$( acpi -V | grep "on-line" )"
+    charging="$(acpi | awk '{print $3}' | sed 's/\,//')"
+    charge="$(acpi | awk '{print $4}' | cut -b 1-2)"
+    remaining="$(acpi | awk '{print $5}')"
+
+#    if [ $(( $(date +"%s") % $(( $batcheck * 60 )) )) -eq 0 ]; then
+#    fi
+
+    [ "$charging" = "Unknown" ] && emoji="🗲"
+    [ "$charging" = "Charging" ] && emoji="🗲🔋"
+    [ "$charging" = "Discharging" ] && emoji="🔋"
+
+    if [ "$charge" -le "30" ] && [ "$charging" = "Discharging" ]; then
+         notify-send -u critical "System info" "Battery low. Last plugged in: $(cat /var/lib/upower/history-time-full-*.dat | awk '{ split($0, a," "); print a[1] }' | sed 's/^/echo "/; s/\([0-9]\{10\}\)/`date -d @\1`/; s/$/"/' | bash | tail -n1) \n"
+        emoji="❗🔋"
+    fi
+
+    echo "$emoji $charge% $remaining"
+}
+
+print_date(){
+    date +"%a %Y/%m/%d, %H:%M"
+}
+
+print_brightness(){
+    p=$(xbacklight)
+    echo ${p%%.*}
+}
+
+check_connection(){
+    #seconds
+    internetcheck=5
+
+    # every $internetcheck seconds, ping 1.1.1.1, if the return value is non-zero (meaning error), send notification
+    [ $(( $(date +"%s") % $internetcheck )) = "0" ] &&  \
+        ping -q -w1 -c1 1.1.1.1 > /dev/null  \
+        && [ $? != "0" ] && notify-send -u critical "System error!" "No connection!"
+    return 0
+}
+
+xsetroot -name "$(print_music) $(print_mem) | $(print_temp) | $(print_bat) | $(print_volume) | $(print_date) "
+check_connection

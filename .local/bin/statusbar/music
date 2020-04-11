@@ -1,0 +1,61 @@
+#!/bin/sh
+
+#filter() {
+
+#	sed "/^volume:/d" | tac | sed -e "s/\\&/&amp;/g;s/\\[paused\\].*/<span color=\"gray\" font_style=\"italic\">/g;s/\\[playing\\].*/<span>/g" | tr -d '\n' | sed -e "s/$/<\\/span>\n/g"
+#	}
+#
+#case $BLOCK_BUTTON in
+#    1) mpc status | filter && setsid "$TERMINAL" -e ncmpcpp & ;;  # right click, pause/unpause
+#    2) mpc toggle | filter ;;  # right click, pause/unpause
+#    3) mpc status | filter && pgrep -x dunst >/dev/null && notify-send "🎵 Music module" "\- Shows mpd song playing.
+#- Italic when paused.
+#- Left click opens ncmpcpp.
+#- Middle click pauses.
+#- Scroll changes track.";;  # right click, pause/unpause
+#    4) mpc prev   | filter ;;  # scroll up, previous
+#    5) mpc next   | filter ;;  # scroll down, next
+#    *) mpc status | filter ;;
+#esac; exit
+
+
+#echo -e "$(python ~/.config/python_music.py)"
+
+#get cmus data
+if [ ! -z "$(pgrep -x cmus$)" ]; then
+    cmusartist="$(cmus-remote --server 0.0.0.0 --passwd passwd -Q 2> /dev/null | grep --text '^tag artist ' | sed -e 's/tag artist //')"
+    cmustitle="$(cmus-remote --server 0.0.0.0 --passwd passwd -Q 2> /dev/null | grep --text '^tag title ' | sed -e 's/tag title //')"
+    cmustimeTot="$(cmus-remote --server 0.0.0.0 --passwd passwd -Q 2> /dev/null | grep --text '^duration' | sed -e 's/duration //')"
+    cmustime="$(cmus-remote --server 0.0.0.0 --passwd passwd -Q 2> /dev/null | grep --text '^position' | sed -e 's/position //')"
+    cmustimeTot="$(date -d @$((cmustimeTot)) +%M:%S)"
+    cmustime="$(date -d @$((cmustime)) +%M:%S)"
+
+    case $(cmus-remote -Q --server 0.0.0.0 --passwd passwd 2> /dev/null | grep --text "^status" | sed -e 's/status //') in
+        playing)
+            emoji="▶" ;;
+        paused)
+            emoji="⏸" ;;
+    esac
+
+    cmustitle=$(echo $cmustitle | sed "s/ ([^)]*)//g")
+    #[ ${#cmustitle} -gt 50 ] && cmustitle="$(echo $cmustitle | cut -b 1-50)⋯"
+    #[ ${#cmusartist} -gt 20 ] && cmusartist="$(echo $cmusartist | cut -b 1-20)⋯"
+    out="($emoji$cmustime/$cmustimeTot) $cmusartist - $cmustitle"
+    [ "$cmustimeTot" != "00:00" ] || return 
+    [ ${#out} -le 70 ] && echo " $out " || echo "$(echo $out | cut -b 1-70)⋯ "
+fi
+
+# get mpd data
+#if [ ! -z "$(pgrep -x mpd)" ]; then
+#    mpdsong="$(mpc status 2> /dev/null | head -1 | sed "s/([^)]*)//g")"
+#    mpdtime="$(mpc status 2> /dev/null | tr '\n' ';' | awk '{ split($0,a,";"); split(a[2], b," "); print b[3] }')"
+#    [ ! -z "$mpdtime" ] && [ ! -z "$mpdsong" ] && echo " ($mpdtime) $mpdsong |"
+#fi
+
+#get spotify data
+#if [ ! -z "$(pgrep -x spotify | head -1)" ]; then
+#    spotifypid=$(pgrep -x spotify | head -1)
+#    spotifytitle="$(eval "wmctrl -l -p | awk '/$spotifypid/' | sed -n 's/.*x230 //p'")"
+#    spotifytitle=$(echo $spotifytitle | sed "s/([^)]*)//g")
+#    [ "$spotifytitle" != "Spotify Premium" ] && [ "$spotifytitle" != "Spotify" ] && echo " $spotifytitle |"
+#fi

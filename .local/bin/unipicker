@@ -1,0 +1,77 @@
+#!/bin/bash
+set -e
+
+should_copy=false
+
+if [ -f /etc/unipickerrc ]; then
+  source /etc/unipickerrc
+fi
+
+if [ -f "$HOME/.unipickerrc" ]; then
+  source "$HOME/.unipickerrc"
+fi
+
+case "$OSTYPE" in
+  darwin*) os_copy_command="pbcopy";;
+  linux*)  os_copy_command="xclip -selection clipboard";;
+  *)       os_copy_command="xclip -selection clipboard";;
+esac
+
+symbols_file="${UNIPICKER_SYMBOLS_FILE:-${PWD}/symbols}"
+select_command=${UNIPICKER_SELECT_COMMAND:-fzf}
+copy_command=${UNIPICKER_COPY_COMMAND:-${os_copy_command}}
+
+usage () {
+  echo "Select unicode character by description"
+  echo ""
+  echo "Usage: unipicker [--command cmd] [--copy-command cmd ] [--copy] [--list]"
+  echo ""
+  echo "Arguments:"
+  echo "  --command       Overrides default select command"
+  echo "  --copy-command  Override copy to clipboard command, implies --copy"
+  echo "  --copy          Copy to clipboard"
+  echo "  --list          Only list the symbols, do not select or copy"
+  echo ""
+  echo "Variables:"
+  echo ""
+  echo "  UNIPICKER_SELECT_COMMAND  Command to use for selecting (= $select_command)"
+  echo "  UNIPICKER_COPY_COMMAND    Command to use for copying (= $copy_command)"
+  echo "  UNIPICKER_SYMBOLS_FILE    Location of symbols (= $symbols_file)"
+}
+
+while [ -n "$1" ];do
+  case "$1" in
+    --command)
+      select_command=$2
+      shift
+      ;;
+    --copy)
+      should_copy=true;;
+    --copy-command)
+      copy_command=$2
+      should_copy=true
+      shift
+      ;;
+    --symbols)
+      symbols_file=$2
+      shift
+      ;;
+    --list)
+      cat "$symbols_file"
+      exit;;
+    -h|--help)
+      usage
+      exit;;
+    *)
+      echo "Invalid argument: $1"
+      exit 1;;
+  esac
+  shift
+done
+
+letter=$(cat "$symbols_file" | eval $select_command | sed -E 's/^(.).*/\1/g')
+
+echo "$letter"
+if [ "$should_copy" = true ];then
+  echo -n "$letter" | $copy_command
+fi

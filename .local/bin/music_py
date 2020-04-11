@@ -22,28 +22,24 @@
 #echo -e "$(python ~/.config/python_music.py)"
 
 #get cmus data
-if [ ! -z "$(pgrep -x cmus$)" ]; then
-    cmusartist="$(cmus-remote --server 0.0.0.0 --passwd passwd -Q 2> /dev/null | grep --text '^tag artist ' | sed -e 's/tag artist //')"
-    cmustitle="$(cmus-remote --server 0.0.0.0 --passwd passwd -Q 2> /dev/null | grep --text '^tag title ' | sed -e 's/tag title //')"
-    cmustimeTot="$(cmus-remote --server 0.0.0.0 --passwd passwd -Q 2> /dev/null | grep --text '^duration' | sed -e 's/duration //')"
-    cmustime="$(cmus-remote --server 0.0.0.0 --passwd passwd -Q 2> /dev/null | grep --text '^position' | sed -e 's/position //')"
-    cmustimeTot="$(date -d @$((cmustimeTot)) +%M:%S)"
-    cmustime="$(date -d @$((cmustime)) +%M:%S)"
+cmusartist="$(cmus-remote --server 0.0.0.0 --passwd passwd -Q | grep --text '^tag artist ' | sed -e 's/tag artist //')"
+cmustitle="$(cmus-remote --server 0.0.0.0 --passwd passwd -Q | grep --text '^tag title ' | sed -e 's/tag title //')"
+cmustimeTot="$(cmus-remote --server 0.0.0.0 --passwd passwd -Q | grep --text '^duration' | sed -e 's/duration //')"
+cmustime="$(cmus-remote --server 0.0.0.0 --passwd passwd -Q | grep --text '^position' | sed -e 's/position //')"
+cmustimeTot="$(date -d @$((cmustimeTot)) +%M:%S)"
+cmustime="$(date -d @$((cmustime)) +%M:%S)"
 
-    case $(cmus-remote -Q --server 0.0.0.0 --passwd passwd 2> /dev/null | grep --text "^status" | sed -e 's/status //') in
-        playing)
-            emoji="▶" ;;
-        paused)
-            emoji="⏸" ;;
-    esac
+case $(cmus-remote -Q --server 0.0.0.0 --passwd passwd 2> /dev/null | grep --text "^status" | sed -e 's/status //') in
+	playing)
+	    emoji="▶" ;;
+	paused)
+	    emoji="⏸" ;;
+esac
 
-    cmustitle=$(echo $cmustitle | sed "s/ ([^)]*)//g")
-    #[ ${#cmustitle} -gt 50 ] && cmustitle="$(echo $cmustitle | cut -b 1-50)⋯"
-    #[ ${#cmusartist} -gt 20 ] && cmusartist="$(echo $cmusartist | cut -b 1-20)⋯"
-    out="($emoji$cmustime/$cmustimeTot) $cmusartist - $cmustitle"
-    [ "$cmustimeTot" != "00:00" ] || return 
-    [ ${#out} -le 75 ] && echo " $out " || echo "$(echo $out | cut -b 1-75)⋯ "
-fi
+#cmustitle=$(echo $cmustitle | sed "s/ ([^)]*)//g")
+#[ ${#cmustitle} -gt 15 ] && cmustitle="$(echo $cmustitle | cut -b 1-15)⋯"
+#[ ${#cmusartist} -gt 8 ] && cmusartist="$(echo $cmusartist | cut -b 1-8)⋯"
+echo "($emoji $cmustime/$cmustimeTot) $cmusartist - $cmustitle"
 
 # get mpd data
 #if [ ! -z "$(pgrep -x mpd)" ]; then

@@ -1,0 +1,4 @@
+#!/bin/sh
+
+[ $(xset q | grep "Caps Lock" | awk '{split($0, a,":"); print a[3]; }' | sed "s/ *//;s/..$//") = "on" ]
+
