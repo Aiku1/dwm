@@ -11,43 +11,31 @@ super + shift + Home
     killall screenkey || (screenkey --scr 1; screenkey --scr 0)
 
 super + b
-    feh --bg-fill ~/Pictures/Wallpapers/wall.png
+    /home/usr/.local/bin/set_bg
 
 XF86MonBrightnessUp
-    xbacklight -inc 10; ~/.config/dwm_status.sh
-
+    xbacklight -inc 10;
 XF86MonBrightnessDown
-    xbacklight -dec 10; ~/.config/dwm_status.sh
+    xbacklight -dec 10;
 
-# Play/Pause
 XF86AudioPlay
-    cmus-remote -u 2> /dev/null; dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause 2> /dev/null; ~/.config/dwm_status.sh
-
-# Next
+    cmus-remote --server 0.0.0.0 --passwd passwd -u 2> /dev/null; pkill -RTMIN+7 dwmblocks
 XF86AudioNext
-    cmus-remote -n 2> /dev/null; dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Next 2> /dev/null; ~/.config/dwm_status.sh
-
-# Previous
+    cmus-remote --server 0.0.0.0 --passwd passwd -n 2> /dev/null; pkill -RTMIN+7 dwmblocks
 XF86AudioPrev
-    cmus-remote -r 2> /dev/null; dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Previous 2> /dev/null; ~/.config/dwm_status.sh
+    cmus-remote --server 0.0.0.0 --passwd passwd -r 2> /dev/null; pkill -RTMIN+7 dwmblocks
 
-# Volume up
 XF86AudioRaiseVolume
-    amixer -D pulse sset Master 2%+; ~/.config/dwm_status.sh
-# Volume down
+    amixer -D pulse sset Master 2%+; pkill -RTMIN+4 dwmblocks
 XF86AudioLowerVolume
-    amixer -D pulse sset Master 2%-; ~/.config/dwm_status.sh
-
-# Volume up 10
-alt + XF86AudioRaiseVolume
-    amixer -D pulse sset Master 10%+; ~/.config/dwm_status.sh
-# Volume down 10
-alt + XF86AudioLowerVolume
-    amixer -D pulse sset Master 10%-; ~/.config/dwm_status.sh
-
-# Volume mute
+    amixer -D pulse sset Master 2%-; pkill -RTMIN+4 dwmblocks
 XF86AudioMute
-    amixer -D pulse sset Master toggle; ~/.config/dwm_status.sh
+    amixer -D pulse sset Master toggle; pkill -RTMIN+4 dwmblocks
+
+alt + XF86AudioRaiseVolume
+    amixer -D pulse sset Master 10%+; pkill -RTMIN+4 dwmblocks
+alt + XF86AudioLowerVolume
+    amixer -D pulse sset Master 10%-; pkill -RTMIN+4 dwmblocks
 
 alt + p; p
     pavucontrol
@@ -66,7 +54,7 @@ super + d
 
 #mount/umount
 super + m; {m, u}
-    st -e {dmenu_mount, dmenu_umount}
+    {dmenu_mount, dmenu_umount}; sleep 10
 
 # screenshot
 super + a
@@ -77,27 +65,50 @@ super + shift + a
 
 # unicode
 super + shift + k
-    /home/usr/.config/unicode.sh
+    /home/usr/.local/bin/unicode
 
 # display mode picker
-super + shift + m
-   ~/.config/screenmode.sh
+{super + shift + m, XF86Display}
+   ~/.local/bin/screenmode
 
-super + r
-    st -e ranger
-
-super + shift + r
-    st -e ranger ~/uni/Appunti/Anno\ I
+super + r; {d, h, u, m}
+    st -e ranger {~/Downloads, ~, "/home/usr/uni/Appunti/Anno I/Semestre II", ~/Music}
 
 super + v; {v, e, c}
     {st -e nvim, emacs, code}
 
 shift + XF86AudioPlay
-    spotify
+    #spotify
+    st -e cmus
 
-# make sxhkd reload its configuration files:
-super + Escape
-	pkill -USR1 -x sxhkd
+# make sxhkd reload its local/configuration files:
+super + dead_grave
+    killall -SIGUSR1 sxhkd && notify-send -t 1000 "sxhkd restarted"
 
 super + F11
     [ $(printf "No\nYes" | rofi -dmenu -i -nb darkred -sb red -sf  white -nf gray -p "Shutdown computer?") = Yes ] && sudo -A shutdown -h now
+
+super + Print
+    dmenurecord
+super + Delete
+    dmenurecord kill
+
+super + shift + c
+#	mpv --no-osc --no-input-default-bindings --input-conf=/dev/null --title='mpvfloat' /dev/video0
+    ffplay -f video4linux2 -i /dev/video0 -video_size 640x480 -fflags nobuffer
+
+super + shift + F2
+    sudo killall dwm
+
+super + shift + F5
+    xrdb
+
+XF86Launch1; {c, s}
+    {st -e cmus --listen 0.0.0.0, spotify}
+
+super + shift + s ; s
+    st -e ssh pi
+
+Caps_Lock
+    pkill -RTMIN+1 dwmblocks; killall compton || ($(compton &) && disown)
+
