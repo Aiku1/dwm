@@ -12,8 +12,8 @@ static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
 static const int vertpad            = 0;       /* vertical padding of bar */
 static const int sidepad            = 0;       /* horizontal padding of bar */
-static const char *fonts[]          = { "monospace:size=10", "Noto Sans Mono:pixelsize=10:antialias=true:autohint=true"  };
-static char dmenufont[]       = "monospace:size=10";
+static const char *fonts[]          = { "monospace:size=10", "JoyPixels:pixelsize=10:antialias=true:autohint=true"  };
+static char dmenufont[]             = "monospace:size=10";
 static char normbgcolor[]           = "#222222";
 static char normbordercolor[]       = "#444444";
 static char normfgcolor[]           = "#bbbbbb";
@@ -118,14 +118,10 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,	XK_b,		togglebar,	{0} },
 	{ MODKEY,			XK_Page_Up,	shiftview,	{ .i = -1 } },
 	{ MODKEY,			XK_Page_Down,	shiftview,	{ .i = 1 } },
-	{ MODKEY,			XK_F2,		quit,		{0} },
-	{ MODKEY,			XK_F5,		xrdb,		{.v = NULL } },
 	{ MODKEY,			XK_space,	zoom,		{0} },
 	{ MODKEY|ShiftMask,	XK_space,	togglefloating,	{0} },
 	{ MODKEY,           XK_comma,   focusmon,       {.i = -1 } },
-	{ MODKEY,           XK_period,  focusmon,       {.i = +1 } },
 	{ MODKEY|ShiftMask, XK_comma,   tagmon,         {.i = -1 } },
-	{ MODKEY|ShiftMask, XK_period,  tagmon,         {.i = +1 } },
 
 	/* { MODKEY,                       XK_space,  setlayout,      {0} }, */
 	/* { MODKEY|Mod4Mask,              XK_h,      incrgaps,       {.i = +1 } }, */
