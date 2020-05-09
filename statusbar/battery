@@ -1,0 +1,47 @@
+#!/bin/sh
+
+# Prints all batteries, their percentage remaining and an emoji corresponding
+# to charge status (🔌 for plugged up, 🔋 for discharging on battery, etc.).
+
+#case $BLOCK_BUTTON in
+#    3) pgrep -x dunst >/dev/null && notify-send "🔋 Battery module" "🔋: discharging
+#🛑: not charging
+#♻: stagnant charge
+#🔌: charging
+#⚡: charged
+#❗: battery very low!" ;;
+#esac
+#
+## Loop through all attached batteries.
+#for battery in /sys/class/power_supply/BAT?
+#do
+#	# Get its remaining capacity and charge status.
+#	capacity=$(cat "$battery"/capacity)
+#	status=$(sed "s/Discharging/🔋/;s/Not charging/🛑/;s/Charging/🔌/;s/Unknown/♻️/;s/Full/⚡/" "$battery"/status)
+#
+#	# If it is discharging and 25% or less, we will add a ❗ as a warning.
+#	 [ "$capacity" -le 25 ] && [ "$status" = "🔋" ] && warn="❗"
+#
+#	printf "%s%s%s%%\n" "$status" "$warn" "$capacity"
+#	unset warn
+#done
+
+#hash acpi || return 0
+#minutes
+#onl="$( acpi -V | grep "on-line" )"
+charging="$(acpi | awk '{print $3}' | sed 's/\,//')"
+charge="$(acpi | awk '{print $4}' | cut -b 1-2)"
+remaining="$(acpi | awk '{print $5}' | cut -b 1-5)"
+
+[ "$charging" = "Unknown" ] && emoji="🔌"
+[ "$charging" = "Charging" ] && emoji="🗲🔋"
+[ "$charging" = "Discharging" ] && emoji="🔋"
+
+if [ "$charge" -le "30" ] && [ "$charging" = "Discharging" ]; then
+     notify-send -u critical "System info" "Battery low. Last plugged in: $(cat /var/lib/upower/history-time-full-*.dat | awk '{ split($0, a," "); print a[1] }' | sed 's/^/echo "/; s/\([0-9]\{10\}\)/`date -d @\1`/; s/$/"/' | bash |
+tail -n1) \n"
+    emoji="❗🔋"
+fi
+
+[ ! -z $remaining  ] && echo " $emoji $charge% ($remaining) "
+[ -z $remaining ] && echo " $emoji $charge% "
