@@ -1,19 +1,19 @@
 /* See LICENSE file for copyright and license details. */
 
 /* appearance */
-static const unsigned int gappih    = 10;       /* horiz inner gap between windows */
-static const unsigned int gappiv    = 10;       /* vert inner gap between windows */
-static const unsigned int gappoh    = 10;       /* horiz outer gap between windows and screen edge */
-static const unsigned int gappov    = 10;       /* vert outer gap between windows and screen edge */
-static const int smartgaps          = 0;        /* 1 means no outer gap when there is only one window */
+static const unsigned int gappih    = 5;       /* horiz inner gap between windows */
+static const unsigned int gappiv    = 5;       /* vert inner gap between windows */
+static const unsigned int gappoh    = 5;       /* horiz outer gap between windows and screen edge */
+static const unsigned int gappov    = 5;       /* vert outer gap between windows and screen edge */
+static const int smartgaps          = 1;        /* 1 means no outer gap when there is only one window */
 static const unsigned int borderpx  = 3;        /* border pixel of windows */
-static const unsigned int snap      = 32;       /* snap pixel */
+static const unsigned int snap      = 16;       /* snap pixel */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
-static const int vertpad            = 0;       /* vertical padding of bar */
-static const int sidepad            = 0;       /* horizontal padding of bar */
-static const char *fonts[]          = { "monospace:size=10", "Noto Sans Mono:pixelsize=10:antialias=true:autohint=true"  };
-static char dmenufont[]       = "monospace:size=10";
+static const int vertpad            = 0;        /* vertical padding of bar */
+static const int sidepad            = 0;        /* horizontal padding of bar */
+static const char *fonts[]          = { "xft:DejaVu Sans Mono:pixelsize=14:antialias=true:autohint=true"  };
+static char dmenufont[]             = "monospace:size=9";
 static char normbgcolor[]           = "#222222";
 static char normbordercolor[]       = "#444444";
 static char normfgcolor[]           = "#bbbbbb";
@@ -30,10 +30,6 @@ static char *colors[][3] = {
 static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
 static const Rule rules[] = {
-	/* xprop(1):
-	 *	WM_CLASS(STRING) = instance, class
-	 *	WM_NAME(STRING) = title
-	 */
 	/* class      instance    title       tags mask     isfloating   monitor */
 	/* { "Gimp",     NULL,       NULL,       0,            1,           -1 }, */
 	{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
@@ -44,10 +40,10 @@ static const float mfact     = 0.50; /* factor of master area size [0.05..0.95] 
 static const int nmaster     = 1;    /* number of clients in master area */
 static const int resizehints = 1;    /* 1 means respect size hints in tiled resizals */
 
-#include "fibonacci.c"
+// #include "fibonacci.c"
 static const Layout layouts[] = {
 	/* symbol     arrange function */
-	{ "[]=",      tile },    /* first entry is default */
+	{ "",         tile },    /* first entry is default */
 	//{ "><>",      NULL },    /* no layout function means floating behavior */
 	//{ "|M|",      centeredmaster },
 	//{ ">M>",      centeredfloatingmaster },
@@ -63,8 +59,8 @@ static const Layout layouts[] = {
 	{ MODKEY|ShiftMask,             KEY,      tag,            {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,      {.ui = 1 << TAG} },
 #define STACKKEYS(MOD,ACTION) \
-	// { MODKEY,	XK_j,	ACTION##stack,	{.i = INC(+1) } }, \
-	// { MODKEY,	XK_k,	ACTION##stack,	{.i = INC(-1) } }, \
+	/* { MODKEY,	XK_j,	ACTION##stack,	{.i = INC(+1) } }, \ */
+	/* { MODKEY,	XK_k,	ACTION##stack,	{.i = INC(-1) } }, \ */
 	/* { MOD, XK_grave, ACTION##stack, {.i = PREVSEL } }, \ */
 	/* { MOD, XK_q,     ACTION##stack, {.i = 0 } }, \ */
 	/* { MOD, XK_a,     ACTION##stack, {.i = 1 } }, \ */
@@ -108,10 +104,10 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,	XK_o,		incnmaster,     {.i = -1 } },
 	{ MODKEY,			XK_backslash,	view,		{0} },
 	{ MODKEY,			XK_s,		togglesticky,	{0} },
-	{ MODKEY|ShiftMask,	XK_d,		togglegaps,	{0} },
+	{ MODKEY|ShiftMask,	XK_d,		togglegaps,	    {0} },
 	{ MODKEY,			XK_f,		togglefullscr,	{0} },
-	{ MODKEY,			XK_h,		setmfact,	    {.f = -0.05} },
-	{ MODKEY,			XK_l,		setmfact,      	{.f = +0.05} },
+	{ MODKEY,			XK_h,		setmfact,	    {.f = -0.025} },
+	{ MODKEY,			XK_l,		setmfact,      	{.f = +0.025} },
 	{ MODKEY,		    XK_Return,	togglescratch,	{.v = scratchpadcmd } },
 	{ MODKEY,			XK_z,		incrgaps,	{.i = +1 } },
 	{ MODKEY|ShiftMask,	XK_z,	    incrgaps,	{.i = -1 } },
@@ -123,9 +119,9 @@ static Key keys[] = {
 	{ MODKEY,			XK_space,	zoom,		{0} },
 	{ MODKEY|ShiftMask,	XK_space,	togglefloating,	{0} },
 	{ MODKEY,           XK_comma,   focusmon,       {.i = -1 } },
-	{ MODKEY,           XK_period,  focusmon,       {.i = +1 } },
+	// { MODKEY,           XK_period,  focusmon,       {.i = +1 } },
 	{ MODKEY|ShiftMask, XK_comma,   tagmon,         {.i = -1 } },
-	{ MODKEY|ShiftMask, XK_period,  tagmon,         {.i = +1 } },
+	// { MODKEY|ShiftMask, XK_period,  tagmon,         {.i = +1 } },
 
 	/* { MODKEY,                       XK_space,  setlayout,      {0} }, */
 	/* { MODKEY|Mod4Mask,              XK_h,      incrgaps,       {.i = +1 } }, */
