@@ -2,10 +2,10 @@ super + shift + q
     kill -9 `xdotool getwindowfocus getwindowpid`
 
 super + w
-    st -e sudo nmtui
+    alacritty -e sudo nmtui
 
-super + shift + w; {b, f, c}
-    {brave-browser, firefox, chromium}
+super + shift + w; {b, c}
+    {brave-browser, chromium}
 
 super + shift + Home
     killall screenkey || (screenkey --scr 1; screenkey --scr 0)
@@ -37,12 +37,17 @@ alt + XF86AudioRaiseVolume
 alt + XF86AudioLowerVolume
     amixer -D pulse sset Master 10%-; pkill -RTMIN+4 dwmblocks
 
+super + equal
+    cmus-remote --server 0.0.0.0 --passwd passwd -v +5
+super + minus
+    cmus-remote --server 0.0.0.0 --passwd passwd -v -5
+
 alt + p; p
     pavucontrol
 
 # Terminal
 super + shift + Return
-    st
+    alacritty
 
 # Lock
 XF86{ScreenSaver,Sleep}
@@ -54,14 +59,14 @@ super + d
 
 #mount/umount
 super + m; {m, u}
-    {dmenu_mount, dmenu_umount}; sleep 10
+    {~/.local/bin/dmenu_mount, ~/.local/bin/dmenu_umount}; sleep 10
 
 # screenshot
 super + a
-    t=$(date +%s); maim -s ~/tmp/$t.png 2> /dev/null; xclip -sel clip -t image/png -i ~/tmp/$t.png
+    t=$(date +%s); maim -s /tmp/$t.png 2> /dev/null; xclip -sel clip -t image/png -i /tmp/$t.png
 
 super + shift + a
-    t=$(date +%s); maim ~/tmp/$t.png 2> /dev/null; xclip -sel clip -t image/png -i ~/tmp/$t.png
+    t=$(date +%s); maim /tmp/$t.png 2> /dev/null; xclip -sel clip -t image/png -i /tmp/$t.png
 
 # unicode
 super + shift + k
@@ -72,30 +77,30 @@ super + shift + k
    ~/.local/bin/screenmode
 
 super + r; {d, h, u, m}
-    st -e ranger {~/Downloads, ~, "/home/usr/uni/Appunti/Anno I/Semestre II", ~/Music}
+    alacritty -e ranger {~/downloads, ~, "/home/usr/uni/Appunti/Anno I/Semestre II", ~/music}
 
-super + v; {v, e, c}
-    {st -e nvim, emacs, code}
+# super + v; {v, e, c}
+#     {alacritty -e nvim, emacs, code}
 
 shift + XF86AudioPlay
     #spotify
-    st -e cmus
+    alacritty -e cmus
 
 # make sxhkd reload its local/configuration files:
 super + dead_grave
-    killall -SIGUSR1 sxhkd && notify-send -t 1000 "sxhkd restarted"
+    alacritty -e vim ~/.config/sxhkd/sxhkdrc; killall -SIGUSR1 sxhkd && notify-send -t 1000 "sxhkd restarted"
 
 super + F11
     [ $(printf "No\nYes" | rofi -dmenu -i -nb darkred -sb red -sf  white -nf gray -p "Shutdown computer?") = Yes ] && sudo -A shutdown -h now
 
 super + Print
-    dmenurecord
+    ~/.local/bin/dmenurecord
 super + Delete
-    dmenurecord kill
+    ~/.local/bin/dmenurecord kill
 
-super + shift + c
+# super + shift + c
 #	mpv --no-osc --no-input-default-bindings --input-conf=/dev/null --title='mpvfloat' /dev/video0
-    ffplay -f video4linux2 -i /dev/video0 -video_size 640x480 -fflags nobuffer
+#   ffplay -f video4linux2 -i /dev/video0 -video_size 640x480 -fflags nobuffer
 
 super + shift + F2
     sudo killall dwm
@@ -104,11 +109,37 @@ super + shift + F5
     xrdb
 
 XF86Launch1; {c, s}
-    {st -e cmus --listen 0.0.0.0, spotify}
+    {alacritty -e cmus --listen 0.0.0.0, spotify}
 
-super + shift + s ; s
-    st -e ssh pi
+super + shift + s; {1, 2, 3}
+    alacritty -e ssh {pi, pve_proxmox, centos}
 
-Caps_Lock
-    pkill -RTMIN+1 dwmblocks; killall compton || ($(compton &) && disown)
+super + shift + s; s
+    dmenu_ssh
 
+super + shift + s; s
+    ~/.local/bin/dmenu_ssh
+
+# Caps_Lock
+#     pkill -RTMIN+1 dwmblocks #; killall compton || ($(compton &) && disown)
+
+super + i
+    clipmenu
+
+super + shift + i
+    clipdel -d '.' && notify-send "Clipboard history erased." --expire-time=2000
+
+super + t
+    Telegram
+
+super + v
+    dmenu_openvpn && notify-send "Connected to VPN." --expire-time=2000
+
+super + shift + v
+    [ $(echo "No\nYes" | rofi -dmenu -theme monokai -p "Interrupt all OpenVPN connections?") = "Yes" ] && sudo killall openvpn && notify-send "OpenVPN connections interrupted." --expire-time=2000
+
+super + shift + r
+    for i in $(seq 2 8); do pkill -RTMIN+$i dwmblocks; done
+
+# super + Caps_Lock
+#     alacritty -e htop
